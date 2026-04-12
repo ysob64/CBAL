@@ -1,7 +1,7 @@
 1:/usr/share/applications/
-2:/home/ysob64/.local/share/applications/
+2:/home/USERHERE/.local/share/applications/
 3:/usr/share/icons/
-4:/home/ysob64/.local/share/icons/
+4:/home/USERHERE/.local/share/icons/
 5:y
 6:g
 
