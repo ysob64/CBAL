@@ -8,7 +8,9 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <sys/stat.h>
 #include <signal.h>
+#include <errno.h>
 
 #include "hroot/io_parse.h"
 #include "hroot/io_color.h"
@@ -21,16 +23,25 @@
 int main()
 {
 	// INIT
-
 	system("clear");
+	resetexec:
+
+	const char *user = getenv("USER");
+
+	if(user is NULL) 
+    {
+        return errorFatal("env variable USER not set, aborting.",-1);
+    }
+
+    setCurrentUser(user);
 
 	time_t global = time(NULL);
   	struct tm *t = localtime(&global);
 
 	char *ApplicationsSysPath=getValue(1);
 	char *ApplicationsLocalPath=getValue(2);
-	char *color=getValue(5);
-	char *colorhigh=getValue(6);
+	char *color=getValue(3);
+	char *colorhigh=getValue(4);
 
 	char *CommandList[7];
 
@@ -49,6 +60,81 @@ int main()
 
 	bool isLeaving=false;
 
+	if(CommandBuffer is NULL)
+	{
+		return errorFatal("Couldn't allocate memory for the main Command Buffer !", -2);
+	}
+
+	if(ApplicationsSysPath is NULL or ApplicationsLocalPath is NULL)
+	{
+		warning("Looks like cfg.txt doesn't exist !\n");
+		
+		char buffer[1024]={0};
+
+		s_Merge(buffer,"/home/",user);
+		const char *userhome = s_copy(buffer);
+		if(userhome is NULL)
+		{
+			return errorFatal("Please run CBAL as a non-root user", -1);
+		}
+
+		s_Merge(buffer,userhome,"/.config/");
+		const char *s_cfgdir = s_copy(buffer);
+
+		DIR *cfgdir = opendir(s_cfgdir);
+		if(!cfgdir)
+		{
+			if (mkdir(buffer, 0777) == -1 && errno != EEXIST) 
+			{
+    			free((char*)userhome);
+				free((char*)s_cfgdir);
+
+    			perror("mkdir failed");
+    			return errorFatal("Cannot create config directory", -1);
+			}
+		}
+
+		s_Merge(buffer,s_cfgdir,"CBAL/");
+
+		cfgdir = opendir(buffer);
+		if(!cfgdir)
+		{
+			if (mkdir(buffer, 0777) == -1 && errno != EEXIST) 
+			{
+    			free((char*)userhome);
+				free((char*)s_cfgdir);
+				closedir(cfgdir);
+
+    			perror("mkdir failed");
+    			return errorFatal("Cannot create config directory", -1);
+			}
+		}
+		
+		s_Merge(buffer,buffer,"cfg.txt");
+
+		printf("Creating config file at %s...\n",buffer);
+
+		FILE *fcfg = fopen(buffer,"w");
+		if(fcfg is NULL)
+		{
+			free((char*)userhome);
+			free((char*)s_cfgdir);
+			closedir(cfgdir);
+			return errorFatal("Failed writing to /home/[user]/.config/CBAL/cfg.txt",-1);
+		}
+
+		fprintf(fcfg, "1:/usr/share/applications/\n2:/home/ysob64/.local/share/applications/\n3:w\n4:g\n\nColor reference : n for black (/none), r for red, g green, b blue, y yellow, m magenta, c cyan, w white.\nNote that this is in 8 bit mode for plain compatibility with all terminals.\n1 = path to system application\n2 = path to user applications\n3 = color\n4 = highlight color");
+
+		free((char*)userhome);
+		free((char*)s_cfgdir);
+		closedir(cfgdir);
+		fclose(fcfg);
+
+
+		printf("Done.\n Restarting...\n");
+		goto resetexec;
+	}
+
 	for(int n=0;n<7;n++)
 	{
 		CommandList[n]=malloc(sizeof(char)*11);
@@ -66,16 +152,6 @@ int main()
 	CommandList[4] = "run";
 	CommandList[5] = "stop";
 	CommandList[6] = "time";
-
-	if(CommandBuffer is NULL)
-	{
-		return errorFatal("Couldn't allocate memory for the main Command Buffer !", -2);
-	}
-
-	if(ApplicationsSysPath is NULL or ApplicationsLocalPath is NULL)
-	{
-		return errorFatal("Looks like cfg.txt has been deleted !\n Please create a new one in the current (executable) directory or copy-paste the default config ! (on github)\n", -1);
-	}
 
 	DIR *sysDir = opendir(ApplicationsSysPath);
 	DIR *userDir = opendir(ApplicationsLocalPath);
@@ -772,5 +848,6 @@ int main()
 
 	free(ApplicationsSysPath);
 	free(ApplicationsLocalPath);
+	ClearUser();
 	return 0;
 }
