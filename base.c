@@ -14,7 +14,6 @@
 #include "hroot/io_color.h"
 #include "hroot/debug.h"
 #include "hroot/stringlib.h"
-#include "hroot/mathlib.h"
 #include "hroot/macros.h"
 
 #define CMD_COMMANDS 8
