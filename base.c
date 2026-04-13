@@ -123,7 +123,7 @@ int main()
 			return errorFatal("Failed writing to /home/[user]/.config/CBAL/cfg.txt",-1);
 		}
 
-		fprintf(fcfg, "1:/usr/share/applications/\n2:/home/ysob64/.local/share/applications/\n3:w\n4:g\n\nColor reference : n for black (/none), r for red, g green, b blue, y yellow, m magenta, c cyan, w white.\nNote that this is in 8 bit mode for plain compatibility with all terminals.\n1 = path to system application\n2 = path to user applications\n3 = color\n4 = highlight color");
+		fprintf(fcfg, "1:/usr/share/applications/\n2:/home/%s/.local/share/applications/\n3:w\n4:g\n\nColor reference : n for black (/none), r for red, g green, b blue, y yellow, m magenta, c cyan, w white.\nNote that this is in 8 bit mode for plain compatibility with all terminals.\n1 = path to system application\n2 = path to user applications\n3 = color\n4 = highlight color",user);
 
 		free((char*)userhome);
 		free((char*)s_cfgdir);
