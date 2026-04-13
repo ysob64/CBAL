@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include "../hroot/debug.h"
 #include "../hroot/macros.h"
-#include "../hroot/mathlib.h"
 
 bool s_isEqual(const char *s1,const char *s2)
 {
