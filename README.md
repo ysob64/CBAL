@@ -16,8 +16,8 @@ Heres the list of all available commands :
  * time : display the current local time.  
  * exit : exit this program, IMPORTANT TO USE instead of ctrl+C !!!
 
-As you may see, there is no search command since 'run' automatically search the app. by matching them.
-If more than one app. match the research, then it displays all app that matched the typed text.
+As you may see, there is no search command since 'run' automatically search the app by matching them.
+If more than one app match the research, then it displays all app that matched the typed text.
 
 Arguments
 --
