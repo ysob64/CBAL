@@ -1,3 +1,6 @@
+// I could have made this file parser more "usable" but I got lazy and have <10 index, so... Bored to implement i_toChar()
+
+#include <stdio.h>
 #include <stdlib.h>
 
 #include "../hroot/debug.h"
