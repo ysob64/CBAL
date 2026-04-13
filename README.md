@@ -37,5 +37,4 @@ TODO
 
 - [x] First setup detection to automatically create cfg.txt in /home/[user]/.config/CBAL/.
 - [ ] arm architecture builds.
-- [ ] Specific directory for cfg.txt instead of the same as the executable.
 - [ ] /usr/bin search & run command. (useful for true async instead of using the & operand in terminal (which kill the process anyway when the terminal closes))
