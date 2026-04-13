@@ -24,6 +24,10 @@ Arguments
 
 They are written under the form letter:value , if no value is required, then it is simply letter: .
 
+Configuration file
+--
+It can be found at /home/[user]/.config/CBAL/cfg.txt
+
 FAQ
 --
 
