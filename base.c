@@ -233,7 +233,7 @@ int main()
 				}
 				break;
 			case 1:
-				printColor("Heres the list of all available command :\n appuser : List all available applications for the current user.\n appsys : List system shared applications.\n run : to execute a program, by matching filename in available .desktop files.\n stop : to terminate or kill a program started with run.\n exit : exit this program, IMPORTANT TO USE instead of ctrl+C !!!\n");
+				printColor("Heres the list of all available commands :\n appuser : List all available applications for the current user.\n appsys : List system shared applications.\n run : to execute a program, by matching filename in available .desktop files.\n stop : to terminate or kill a program started with run.\n time : display the current local time.\n exit : exit this program, IMPORTANT TO USE instead of ctrl+C !!!\n");
 				break;
 			case 2:
 				int lineCount=0;
