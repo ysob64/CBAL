@@ -299,7 +299,7 @@ int main()
 	free(colorhigh);
 
 	//POST INIT
-	printColor("Welcome ! type help for help !\n");
+	printColor("Welcome to CBAL v0.7 ! type help for help !\n");
 	printf("%s We are currently %d:%d:%d %s\n",TextColor,t->tm_hour,t->tm_min,t->tm_sec,COLOR_RESET);
 
 	//MAIN
