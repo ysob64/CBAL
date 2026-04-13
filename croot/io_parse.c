@@ -1,16 +1,30 @@
-// I could have made this file parser more "usable" but I got lazy and have <10 index, so... Bored to implement i_toChar()
-
-#include <stdio.h>
 #include <stdlib.h>
 
 #include "../hroot/debug.h"
 #include "../hroot/macros.h"
 #include "../hroot/stringlib.h"
 
+char *cuser;
+
+void setCurrentUser(const char *user)
+{
+    cuser = s_copy(user);
+}
+
+void ClearUser()
+{
+    free(cuser);
+}
+
 char *getValue(int index)
 {
 	FILE* cfg;
-    cfg = fopen("cfg.txt", "r");
+    char dbuffer[1024]={0};
+
+    s_Merge(dbuffer,"/home/",cuser);
+    s_Merge(dbuffer,dbuffer,"/.config/CBAL/cfg.txt");
+
+    cfg = fopen(dbuffer, "r");
     if(!cfg) return NULL;
 
     int cc,i,y=0;
