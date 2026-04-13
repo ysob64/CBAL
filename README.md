@@ -37,4 +37,6 @@ TODO
 
 - [x] First setup detection to automatically create cfg.txt in /home/[user]/.config/CBAL/.
 - [ ] arm architecture builds.
-- [ ] /usr/bin search & run command. (useful for true async instead of using the & operand in terminal (which kill the process anyway when the terminal closes))
+- [x] /usr/bin search & run command. (useful for true async instead of using the & operand in terminal (which kill the process anyway when the terminal closes))
+- [ ] Add args support for 'run' and 'runb'.
+- [ ] make 'runb' runs in a external terminal.
