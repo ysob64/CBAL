@@ -27,6 +27,10 @@ Configuration file
 --
 It can be found at /home/[user]/.config/CBAL/cfg.txt
 
+Required dependency (on runtime only)
+--
+'sudo' (any version) for running as root.
+
 FAQ
 --
 
@@ -39,7 +43,7 @@ TODO
 --
 
 - [x] First setup detection to automatically create cfg.txt in /home/[user]/.config/CBAL/.
-- [ ] arm architecture builds.
+- [ ] arm architecture builds. (when v1 will be out)
 - [x] /usr/bin search & run command. (useful for true async instead of using the & operand in terminal (which kill the process anyway when the terminal closes))
 - [x] Add args support for 'run'.
 - [ ] make 'run' runs in a external terminal.
