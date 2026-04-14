@@ -18,7 +18,8 @@
 #include "hroot/stringlib.h"
 #include "hroot/macros.h"
 
-#define CMD_COMMANDS 10
+#define CMD_COMMANDS 7
+#define VERSION 0.8f
 
 int main()
 {
@@ -151,15 +152,12 @@ int main()
 	}
 
 	CommandList[0] = "help";
-	CommandList[1] = "appsys";
-	CommandList[2] = "appuser";
-	CommandList[3] = "exit";
-	CommandList[4] = "run";
-	CommandList[5] = "stop";
-	CommandList[6] = "time";
-	CommandList[7] = "runb";
-	CommandList[8] = "appbin";
-	CommandList[9] = "END_CMD";
+	CommandList[1] = "app";
+	CommandList[2] = "exit";
+	CommandList[3] = "run";
+	CommandList[4] = "stop";
+	CommandList[5] = "time";
+	CommandList[6] = "END_CMD";
 
 	DIR *sysDir = opendir(ApplicationsSysPath);
 	DIR *userDir = opendir(ApplicationsLocalPath);
@@ -299,9 +297,7 @@ int main()
 	free(colorhigh);
 
 	//POST INIT
-	printColor("Welcome to CBAL v0.7 ! type help for help !\n");
-	printf("%s We are currently %d:%d:%d %s\n",TextColor,t->tm_hour,t->tm_min,t->tm_sec,COLOR_RESET);
-
+	printf("%sWelcome to CBAL v%2.1f ! type help for help !\n We are currently %d:%d:%d %s\n",TextColor,VERSION,t->tm_hour,t->tm_min,t->tm_sec,COLOR_RESET);
 	//MAIN
 	while(true)
 	{
@@ -354,10 +350,12 @@ int main()
 				bool isHelp=false;
 
 				int i=0;
-				int LOCAL_OFFSET=7;
+				int LOCAL_OFFSET=4;
 
 				bool isSearching=false;
 				int nonMatch=0;
+
+				char env=0;
 
 				//args
 				while(CommandBuffer[LOCAL_OFFSET+i] not '\0')
@@ -366,6 +364,22 @@ int main()
 					{
 						isHelp=true;
 						break;
+					}
+
+					if(CommandBuffer[LOCAL_OFFSET+i] is 'e' and CommandBuffer[LOCAL_OFFSET+1+i] is ':')
+					{
+						if(CommandBuffer[LOCAL_OFFSET+2+i] is 's')
+						{
+							env='s';
+						}
+						else if(CommandBuffer[LOCAL_OFFSET+2+i] is 'u')
+						{
+							env='u';
+						}
+						else if(CommandBuffer[LOCAL_OFFSET+2+i] is 'b')
+						{
+							env='b';
+						}
 					}
 
 					if(CommandBuffer[LOCAL_OFFSET+i] is 'r' and CommandBuffer[LOCAL_OFFSET+1+i] is ':')
@@ -414,7 +428,7 @@ int main()
 
 				if(isHelp)
 				{
-					printColor("Arguments :\n l:[Number from 0 to 99] --> Number of lines per pages\n p:[Number from 0 to 99] --> Which page do you want to see ?\n r:[name to search] --> search a program (ignore l: and p: args.)\n h: --> display this help\n");
+					printColor("Arguments :\ne:[letter] --> to precise the environment, which can be 's' for system apps, 'u' for the current user apps, and 'b' for programs in /usr/bin\n l:[Number from 0 to 99] --> Number of lines per pages\n p:[Number from 0 to 99] --> Which page do you want to see ?\n r:[name to search] --> search a program (ignore l: and p: args.)\n h: --> display this help\n");
 					break;
 				}
 				
@@ -441,203 +455,149 @@ int main()
 					break;
 				}
 
-				//second 'if' because if we would have an out of bound,
-				//and check this condition, it segfault. 
-				if(sysDirApps[pageCount*lineCount] is NULL)
+				if(env is 's')
 				{
-					error("Page doesn't exist !");
-					break;
-				}
-
-				i=0;
-				//printf("%sPrinting %s%d%s lines at page n°%s%d%s",GetColor(),COLOR_HIGHLIGHT,lineCount,GetColor(),COLOR_HIGHLIGHT,pageCount,COLOR_RESET);
-				printf("%s[System apps (page n°%d/%d)]%s\n",HighLightColor,pageCount,sysDirc%lineCount > 0 ? sysDirc%lineCount-(sysDirc%lineCount-sysDirc/lineCount) : sysDirc/lineCount-1,COLOR_RESET);
-				
-
-				if(isSearching)
-				{
-					printColor("r: precised, hiding non-matching app\n");
-					while(sysDirApps[i] not NULL)
- 					{
- 						if(s_StartWith(AppBuffer,sysAppsNames[i],s_Lenght(AppBuffer)))
- 						{
- 							printColorEnd(sysAppsNames[i],'\n');
- 						}
- 						else
- 						{
- 							nonMatch++;
- 						}
-
- 						i++;
- 					}
-
- 					printf("%sHid %s%d%s non-matching apps%s\n",TextColor,HighLightColor,nonMatch,TextColor,COLOR_RESET);
- 				}
- 				else
- 				{
- 					while(sysDirApps[i+pageCount*lineCount] not NULL and i<lineCount)
- 					{
- 						printColorEnd(sysAppsNames[i+pageCount*lineCount],'\n');
-
- 						i++;
- 					}
- 				}
- 				
- 				
-				//Printing the warning at the end so if theres no scrolling avaiblable, we can still see it.
-				if(pageCount==0 and isFirstPage and !isSearching)
-				{
-					warning("number of page not precised, printed the first one. (see appsys h !)");
-				}
-
- 				break;
-				
-			case 3:
-				lineCount=0;
-				pageCount=-1;
-
-				isFirstPage=false;
-				isHelp=false;
-				LOCAL_OFFSET=8;
-
-				isSearching=false;
-				nonMatch=0;
-
-				i=0;
-
-				//args
-				while(CommandBuffer[LOCAL_OFFSET+i] not '\0')
-				{
-					if(CommandBuffer[LOCAL_OFFSET+i] is 'h' and CommandBuffer[LOCAL_OFFSET+1+i] is ':')
+					//second 'if' because if we would have an out of bound,
+					//and check this condition, it segfault. 
+					if(sysDirApps[pageCount*lineCount] is NULL)
 					{
-						isHelp=true;
+						error("Page doesn't exist !");
 						break;
 					}
 
-					if(CommandBuffer[LOCAL_OFFSET+i] is 'l' and CommandBuffer[LOCAL_OFFSET+1+i] is ':' and CommandBuffer[LOCAL_OFFSET+2+i]-'0' <= 9 and CommandBuffer[LOCAL_OFFSET+2+i]-'0' >= 0)
-					{
-						if(CommandBuffer[LOCAL_OFFSET+3+i] not '\0' and CommandBuffer[LOCAL_OFFSET+3+i]-'0' <= 9 and CommandBuffer[LOCAL_OFFSET+3+i]-'0' >= 0)
-						{
-							lineCount=CommandBuffer[LOCAL_OFFSET+3+i]-'0';
-							lineCount+=(CommandBuffer[LOCAL_OFFSET+2+i]-'0')*10;
-						}
-						else
-						{
-							lineCount=CommandBuffer[LOCAL_OFFSET+2+i]-'0';
-						}
-					}
-
-					if(CommandBuffer[LOCAL_OFFSET+i] is 'r' and CommandBuffer[LOCAL_OFFSET+1+i] is ':')
-					{
-						isSearching=true;
-
-						int y=0;
-						while(CommandBuffer[LOCAL_OFFSET+2+i] not '\0' and CommandBuffer[LOCAL_OFFSET+2+i] not ' ' and CommandBuffer[LOCAL_OFFSET+2+i] not '\t')
-						{
-							AppBuffer[y]=CommandBuffer[LOCAL_OFFSET+2+i];
-							y++;
-							i++;
-						}
-
-						AppBuffer[LOCAL_OFFSET+2+y]='\0';
-					}
-
-					if(CommandBuffer[LOCAL_OFFSET+i] is 'p' and CommandBuffer[LOCAL_OFFSET+1+i] is ':' and CommandBuffer[LOCAL_OFFSET+2+i]-'0' <= 9 and CommandBuffer[LOCAL_OFFSET+2+i]-'0' >= 0)
-					{
-						if(CommandBuffer[LOCAL_OFFSET+3+i] not '\0' and CommandBuffer[LOCAL_OFFSET+3+i]-'0' <= 9 and CommandBuffer[LOCAL_OFFSET+3+i]-'0' >= 0)
-						{
-							pageCount=CommandBuffer[LOCAL_OFFSET+3+i]-'0';
-							pageCount+=(CommandBuffer[LOCAL_OFFSET+2+i]-'0')*10;
-						}
-						else
-						{
-							pageCount=CommandBuffer[LOCAL_OFFSET+2+i]-'0';
-						}
-					}
-
-					i++;
-				}
-
-				if(isHelp)
-				{
-					printColor("Arguments :\n l:[Number from 0 to 99] --> Number of lines per pages\n p:[Number from 0 to 99] --> Which page do you want to see ?\n r:[name to search] --> search a program (ignore l: and p: args.)\n h: --> display this help\n");
-					break;
-				}
+					i=0;
+					//printf("%sPrinting %s%d%s lines at page n°%s%d%s",GetColor(),COLOR_HIGHLIGHT,lineCount,GetColor(),COLOR_HIGHLIGHT,pageCount,COLOR_RESET);
+					printf("%s[System apps (page n°%d/%d)]%s\n",HighLightColor,pageCount,sysDirc%lineCount > 0 ? sysDirc%lineCount-(sysDirc%lineCount-sysDirc/lineCount) : sysDirc/lineCount-1,COLOR_RESET);
 				
-				//<0 in case some weird stuff happen, we never know with my code
-				if(lineCount<=0)
-				{
-					
-					lineCount=lineAmountCfg; //please don't have more than 3000 apps, thanks.
-				}
 
-				if(pageCount==-1)
-				{
-					isFirstPage=true;
-				}
-
-				if(pageCount<0)
-				{
-					pageCount=0;
-				}
-
-				if(pageCount*lineCount > 1024 and lineCount==3000)
-				{
-					error("Page index precised but no line per page amount precised !");
-					break;
-				}
-
-				//second 'if' because if we would have an out of bound,
-				//and check this condition, it segfault. 
-				if(userDirApps[pageCount*lineCount] is NULL)
-				{
-					error("Page doesn't exist !");
-					break;
-				}
-
-				i=0;
-				//printf("%sPrinting %s%d%s lines at page n°%s%d%s",GetColor(),COLOR_HIGHLIGHT,lineCount,GetColor(),COLOR_HIGHLIGHT,pageCount,COLOR_RESET);
-				printf("%s[User apps (page n°%d/%d)]%s\n",HighLightColor,pageCount,userDirc%lineCount > 0 ? userDirc%lineCount-(userDirc%lineCount-userDirc/lineCount) : userDirc/lineCount-1,COLOR_RESET);
-				if(isSearching)
-				{
-					printColor("r: precised, hiding non-matching app\n");
-					while(userDirApps[i] not NULL)
- 					{
- 						if(s_StartWith(AppBuffer,userAppsNames[i],s_Lenght(AppBuffer)))
+					if(isSearching)
+					{
+						printColor("r: precised, hiding non-matching app\n");
+						while(sysDirApps[i] not NULL)
  						{
- 							printColorEnd(userAppsNames[i],'\n');
- 						}
- 						else
- 						{
- 							nonMatch++;
- 						}
+ 							if(s_StartWith(AppBuffer,sysAppsNames[i],s_Lenght(AppBuffer)))
+ 							{
+ 								printColorEnd(sysAppsNames[i],'\n');
+ 							}
+ 							else
+ 							{
+ 								nonMatch++;
+ 							}
 
  						i++;
  					}
 
  					printf("%sHid %s%d%s non-matching apps%s\n",TextColor,HighLightColor,nonMatch,TextColor,COLOR_RESET);
- 				}
- 				else
- 				{
- 					while(userDirApps[i+pageCount*lineCount] not NULL and i<lineCount)
+ 					}
+ 					else
  					{
- 						printColorEnd(userAppsNames[i+pageCount*lineCount],'\n');
+ 						while(sysDirApps[i+pageCount*lineCount] not NULL and i<lineCount)
+ 						{
+ 							printColorEnd(sysAppsNames[i+pageCount*lineCount],'\n');
+
+ 							i++;
+ 						}
+ 					}
+				}
+				else if(env is 'u')
+				{
+					//second 'if' because if we would have an out of bound,
+					//and check this condition, it segfault. 
+					if(userDirApps[pageCount*lineCount] is NULL)
+					{
+						error("Page doesn't exist !");
+						break;
+					}
+
+					i=0;
+					
+					printf("%s[User apps (page n°%d/%d)]%s\n",HighLightColor,pageCount,userDirc%lineCount > 0 ? userDirc%lineCount-(userDirc%lineCount-userDirc/lineCount) : userDirc/lineCount-1,COLOR_RESET);
+					if(isSearching)
+					{
+						printColor("r: precised, hiding non-matching app\n");
+						while(userDirApps[i] not NULL)
+ 						{
+ 							if(s_StartWith(AppBuffer,userAppsNames[i],s_Lenght(AppBuffer)))
+ 							{
+ 								printColorEnd(userAppsNames[i],'\n');
+ 							}
+ 							else
+ 							{
+ 								nonMatch++;
+ 							}
+
+ 							i++;
+ 					}
+ 						printf("%sHid %s%d%s non-matching apps%s\n",TextColor,HighLightColor,nonMatch,TextColor,COLOR_RESET);
+ 					}
+ 					else
+ 					{
+ 						while(userDirApps[i+pageCount*lineCount] not NULL and i<lineCount)
+ 						{
+ 							printColorEnd(userAppsNames[i+pageCount*lineCount],'\n');
 
  						i++;
+ 						}
  					}
- 				}
+				}
+				else if(env is 'b')
+				{
+					//second 'if' because if we would have an out of bound,
+					//and check this condition, it segfault. 
+					if(binApps[pageCount*lineCount] is NULL)
+					{
+						error("Page doesn't exist !");
+						break;
+					}
+
+					i=0;
+				
+					printf("%s[/usr/bin apps (page n°%d/%d)]%s\n",HighLightColor,pageCount,binC%lineCount > 0 ? binC%lineCount-(binC%lineCount-binC/lineCount) : binC/lineCount-1,COLOR_RESET);
+					if(isSearching)
+					{
+						printColor("r: precised, hiding non-matching app\n");
+						while(binApps[i] not NULL)
+ 						{
+ 							if(s_StartWith(AppBuffer,binApps[i],s_Lenght(AppBuffer)))
+ 							{
+ 								printColorEnd(binApps[i],'\n');
+ 							}
+ 							else
+ 							{
+ 								nonMatch++;
+ 							}
+ 							i++;
+ 						}
+
+ 						printf("%sHid %s%d%s non-matching apps%s\n",TextColor,HighLightColor,nonMatch,TextColor,COLOR_RESET);
+					}
+					else
+					{
+						while(binApps[i+pageCount*lineCount] not NULL and i<lineCount)
+ 						{
+ 							printColorEnd(binApps[i+pageCount*lineCount],'\n');
+ 						
+ 							i++;
+ 						}
+					}
+				}
+				else
+				{
+					error("Please precise an environment where the program/app is ! (see help with h:)");
+					break;
+				}
  				
 				//Printing the warning at the end so if theres no scrolling avaiblable, we can still see it.
 				if(pageCount==0 and isFirstPage and !isSearching)
 				{
-					warning("number of page not precised, printed the first one. (see appsys h !)");
+					warning("number of page not precised, printed the first one. (see app h: !)");
 				}
 
  				break;
-			case 4:
+			case 3:
 				isLeaving=true;
 				break;
-			case 5:
+			case 4:
 				i=0; //terrible, but will do
 				int matchCount=0,matchCountUsr=0;
 				int matchPos=0;
@@ -645,6 +605,7 @@ int main()
 				bool isUser=false;
 				bool finded=false;
 				bool isListing=false;
+				bool isBin=false;
 				isHelp=false;
 
 				LOCAL_OFFSET=4;
@@ -662,6 +623,11 @@ int main()
 					{
 						isListing=true;
 						break;
+					}
+
+					if(CommandBuffer[LOCAL_OFFSET+i] is 'b' and CommandBuffer[LOCAL_OFFSET+1+i] is ':')
+					{
+						isBin=true;
 					}
 
 					if(CommandBuffer[LOCAL_OFFSET+i] is 'a' and CommandBuffer[LOCAL_OFFSET+1+i] is ':' and CommandBuffer[LOCAL_OFFSET+2+i]-'0' <= 1 and CommandBuffer[LOCAL_OFFSET+2+i]-'0' >= 0)
@@ -687,7 +653,7 @@ int main()
 
 				if(isHelp)
 				{
-					printColor("Arguments :\n e:[name] --> application name to execute.\n a:[0 or 1] --> 1 for asynchronous (you can still type in after booting up a software) or 0 for synchronous (useful for viewing logs).\n l: --> display all async. process running.\n h: --> display this help.\n");
+					printColor("Arguments :\n e:[name] --> application name to execute.\n a:[0 or 1] --> 1 for asynchronous (you can still type in after booting up a software) or 0 for synchronous (useful for viewing logs).\n b: --> execute a program from /usr/bin\n l: --> display all async. process running.\n h: --> display this help.\n");
 					break;
 				}
 
@@ -741,121 +707,195 @@ int main()
 					break;
 				}
 
-				while((userDirApps[i] not NULL) and !finded)
- 				{
- 					//If it exactly match, in case of a filename starting with the
- 					// same words / letter sequence
- 					if(s_isEqual(AppBuffer,userAppsNames[i]))
+				
+				if(isBin)
+				{
+					while((binApps[i] not NULL) and !finded)
  					{
- 						matchCountUsr=1;
- 						matchPos=i;
- 						finded=true;
- 						break;
+ 						//If it exactly match, in case of a filename starting with the
+ 						// same words / letter sequence
+ 						if(s_isEqual(AppBuffer,binApps[i]))
+ 						{
+ 							matchCount=1;
+ 							matchPos=i;
+ 							finded=true;
+ 							break;
+ 						}
+	
+
+ 						if(s_StartWith(AppBuffer,binApps[i],s_Lenght(AppBuffer)) and !finded)
+ 						{
+ 							matchCount++;
+ 							printColorEnd(binApps[i],'\n');
+ 							matchPos=i;
+ 						}
+
+ 						i++;
  					}
 
-
- 					if(s_StartWith(AppBuffer,userAppsNames[i],s_Lenght(AppBuffer)) and !finded)
+ 					if(matchCount>1)
  					{
- 						matchCountUsr++;
- 						printColorEnd(userAppsNames[i],'\n');
- 						matchPos=i;
+ 						printf("%sFounded %s%d%s matches in total !%s\n",TextColor,HighLightColor,matchCount+matchCountUsr,TextColor,COLOR_RESET);
  					}
-
- 					i++;
- 				}
-
- 				i=0;
- 				while((sysDirApps[i] not NULL) and !finded)
- 				{
- 					if(s_isEqual(AppBuffer,sysAppsNames[i]))
+ 					else if(matchCount == 0)
  					{
- 						matchCount=1;
- 						matchCountUsr=0; //A bit of spaghetti coded stuff
- 						matchPos=i;
- 						finded=true;
- 						break;
- 					}
-
- 					if(s_StartWith(AppBuffer,sysAppsNames[i],s_Lenght(AppBuffer)) and !finded)
- 					{
- 						matchCount++;
- 						printColorEnd(sysAppsNames[i],'\n');
- 						matchPos=i;
- 					}
-
- 					i++;
- 				}
-
- 				if(matchCount+matchCountUsr>1)
- 				{
- 					printf("%sFounded %s%d%s matches in total !%s\n",TextColor,HighLightColor,matchCount+matchCountUsr,TextColor,COLOR_RESET);
- 				}
- 				else if(matchCount+matchCountUsr == 0)
- 				{
- 					printf("%sDid not find any applications named '%s' !%s\n",TextColor,AppBuffer,COLOR_RESET);
- 				}
- 				else
- 				{
- 					char fexec[512];
-
- 					if(matchCountUsr==1)
- 					{
-						s_Merge(fexec,ApplicationsLocalPath,userDirApps[matchPos]);
-						RunningApps[pidsCount]=s_copy(userAppsNames[matchPos]);
+ 						printf("%sDid not find any applications named '%s' !%s\n",TextColor,AppBuffer,COLOR_RESET);
  					}
  					else
  					{
-						s_Merge(fexec,ApplicationsSysPath,sysDirApps[matchPos]);
-						RunningApps[pidsCount]=s_copy(sysAppsNames[matchPos]);
- 					}
+ 						char exec[512];
 
- 					if(RunningApps[pidsCount] is NULL)
- 					{
- 						return errorFatal("Couldn't allocate ! (RunningApps)",-2);
- 						break;
- 					}
+ 					
+ 						s_Merge(exec,"/usr/bin/",binApps[matchPos]);
+						RunningApps[pidsCount]=s_copy(binApps[matchPos]);
+ 					
 
- 					FILE *fp = fopen(fexec, "r");
- 					if(!fp) 
- 					{
- 						error("Couldn't find the executable !");
- 						break;
- 					}
- 					char *exec = malloc(sizeof(char)*256);
- 					if(exec is NULL)
- 					{
- 						return errorFatal("Couldn't allocate memory !", -2);
- 					}
- 					exec = getExec(fp,4);
+ 						if(RunningApps[pidsCount] is NULL)
+ 						{
+ 							return errorFatal("Couldn't allocate ! (RunningApps)",-2);
+ 							break;
+ 						}
 
- 					if(isAsync)
- 					{
- 						PIDS[pidsCount] = fork();
+ 						if(isAsync)
+ 						{
+ 							PIDS[pidsCount] = fork();
  						
- 						if(PIDS[pidsCount] == 0)
- 						{
- 							setpgid(0, 0);
- 							execlp("/bin/sh","/bin/sh", "-c", exec, (char *)NULL);
+ 							if(PIDS[pidsCount] == 0)
+ 							{
+ 								setpgid(0, 0);
+ 								execlp("/bin/sh","/bin/sh", "-c", exec, (char *)NULL);
+ 							}
+ 							else if(PIDS[pidsCount] < 0)
+ 							{
+ 								error("Fork failed to create the child process.");
+ 							}
+
+ 							printf("%s Process started on PID %d\n to stop it, type %s'stop [PID]'%s\n",TextColor,PIDS[pidsCount],HighLightColor,COLOR_RESET);
+ 							pidsCount++;
  						}
- 						else if(PIDS[pidsCount] < 0)
+ 						else
  						{
- 							error("Fork failed to create the child process.");
+ 							system(exec);
  						}
-
- 						free(exec);
-
- 						printf("%s Process started on PID %d\n to stop it, type %s'stop [PID]'%s\n",TextColor,PIDS[pidsCount],HighLightColor,COLOR_RESET);
- 						pidsCount++;
  					}
- 					else
- 					{
- 						system(exec);
- 						free(exec);
- 					}
- 				}
+				}
+				else
+				{
+					while((userDirApps[i] not NULL) and !finded)
+	 				{
+	 					//If it exactly match, in case of a filename starting with the
+	 					// same words / letter sequence
+	 					if(s_isEqual(AppBuffer,userAppsNames[i]))
+	 					{
+	 						matchCountUsr=1;
+	 						matchPos=i;
+	 						finded=true;
+	 						break;
+	 					}
 
+
+	 					if(s_StartWith(AppBuffer,userAppsNames[i],s_Lenght(AppBuffer)) and !finded)
+	 					{
+	 						matchCountUsr++;
+	 						printColorEnd(userAppsNames[i],'\n');
+	 						matchPos=i;
+	 					}
+
+	 					i++;
+	 				}
+
+	 				i=0;
+	 				while((sysDirApps[i] not NULL) and !finded)
+	 				{
+	 					if(s_isEqual(AppBuffer,sysAppsNames[i]))
+	 					{
+	 						matchCount=1;
+	 						matchCountUsr=0; //A bit of spaghetti coded stuff
+	 						matchPos=i;
+	 						finded=true;
+	 						break;
+	 					}
+
+	 					if(s_StartWith(AppBuffer,sysAppsNames[i],s_Lenght(AppBuffer)) and !finded)
+	 					{
+	 						matchCount++;
+	 						printColorEnd(sysAppsNames[i],'\n');
+	 						matchPos=i;
+	 					}
+
+	 					i++;
+	 				}
+
+	 				if(matchCount+matchCountUsr>1)
+	 				{
+	 					printf("%sFounded %s%d%s matches in total !%s\n",TextColor,HighLightColor,matchCount+matchCountUsr,TextColor,COLOR_RESET);
+	 				}
+	 				else if(matchCount+matchCountUsr == 0)
+	 				{
+	 					printf("%sDid not find any applications named '%s' !%s\n",TextColor,AppBuffer,COLOR_RESET);
+	 				}
+	 				else
+	 				{
+	 					char fexec[512];
+
+	 					if(matchCountUsr==1)
+	 					{
+							s_Merge(fexec,ApplicationsLocalPath,userDirApps[matchPos]);
+							RunningApps[pidsCount]=s_copy(userAppsNames[matchPos]);
+	 					}
+	 					else
+	 					{
+							s_Merge(fexec,ApplicationsSysPath,sysDirApps[matchPos]);
+							RunningApps[pidsCount]=s_copy(sysAppsNames[matchPos]);
+	 					}
+
+	 					if(RunningApps[pidsCount] is NULL)
+	 					{
+	 						return errorFatal("Couldn't allocate ! (RunningApps)",-2);
+	 						break;
+	 					}
+
+	 					FILE *fp = fopen(fexec, "r");
+	 					if(!fp) 
+	 					{
+	 						error("Couldn't find the executable !");
+	 						break;
+	 					}
+	 					char *exec = malloc(sizeof(char)*256);
+	 					if(exec is NULL)
+	 					{
+	 						return errorFatal("Couldn't allocate memory !", -2);
+	 					}
+	 					exec = getExec(fp,4);
+
+	 					if(isAsync)
+	 					{
+	 						PIDS[pidsCount] = fork();
+	 						
+	 						if(PIDS[pidsCount] == 0)
+	 						{
+	 							setpgid(0, 0);
+	 							execlp("/bin/sh","/bin/sh", "-c", exec, (char *)NULL);
+	 						}
+	 						else if(PIDS[pidsCount] < 0)
+	 						{
+	 							error("Fork failed to create the child process.");
+	 						}
+
+	 						free(exec);
+
+	 						printf("%s Process started on PID %d\n to stop it, type %s'stop [PID]'%s\n",TextColor,PIDS[pidsCount],HighLightColor,COLOR_RESET);
+	 						pidsCount++;
+	 					}
+	 					else
+	 					{
+	 						system(exec);
+	 						free(exec);
+	 					}
+	 				}
+				}
  				break;
- 			case 6:
+ 			case 5:
  				isHelp=false;
  				char sPIDS[32]={0};
  				int PID=0;
@@ -929,331 +969,11 @@ int main()
 					break;
 				}
  				break;
- 			case 7:
+ 			case 6:
 				global = time(NULL);
 				t = localtime(&global);
 				printf("%s %d:%d:%d %s\n",TextColor,t->tm_hour,t->tm_min,t->tm_sec,COLOR_RESET);
 				break;
-			case 8:
-				// I KNOW this is terrible to add new command that are extremely similar
-				// but for the simplicity of ctrl-c, yes.
-				// (and nobody is going to complain for file size this small)
-
-				i=0;
-				matchCount=0;
-				matchPos=0;
-				isAsync=false;
-				finded=false;
-				isListing=false;
-				isHelp=false;
-
-				LOCAL_OFFSET=5;
-
-				//args
-				while(CommandBuffer[LOCAL_OFFSET+i] not '\0')
-				{
-					if(CommandBuffer[LOCAL_OFFSET+i] is 'h' and CommandBuffer[LOCAL_OFFSET+1+i] is ':')
-					{
-						isHelp=true;
-						break;
-					}
-
-					if(CommandBuffer[LOCAL_OFFSET+i] is 'l' and CommandBuffer[LOCAL_OFFSET+1+i] is ':')
-					{
-						isListing=true;
-						break;
-					}
-
-					if(CommandBuffer[LOCAL_OFFSET+i] is 'a' and CommandBuffer[LOCAL_OFFSET+1+i] is ':' and CommandBuffer[LOCAL_OFFSET+2+i]-'0' <= 1 and CommandBuffer[LOCAL_OFFSET+2+i]-'0' >= 0)
-					{
-						isAsync=CommandBuffer[6+i]-'0';
-					}
-
-					if(CommandBuffer[LOCAL_OFFSET+i] is 'e' and CommandBuffer[LOCAL_OFFSET+1+i] is ':')
-					{
-						int y=0;
-						while(CommandBuffer[LOCAL_OFFSET+2+i] not '\0' and CommandBuffer[LOCAL_OFFSET+2+i] not ' ' and CommandBuffer[LOCAL_OFFSET+2+i] not '\t')
-						{
-							AppBuffer[y]=CommandBuffer[LOCAL_OFFSET+2+i];
-							y++;
-							i++;
-						}
-
-						AppBuffer[LOCAL_OFFSET+2+y]='\0';
-					}
-
-					i++;
-				}
-
-				if(isHelp)
-				{
-					printColor("Arguments :\n e:[name] --> application name to execute.\n a:[0 or 1] --> 1 for asynchronous (you can still type in after booting up a software) or 0 for synchronous (useful for viewing logs).\n l: --> display all async. process running.\n h: --> display this help.\n");
-					break;
-				}
-
-				if(isListing)
-				{
-					int c=0;
-					printf("%s",TextColor);
-					while(RunningApps[c] not NULL)
-					{
-						//It needs to run twice and I HAVE NO IDEA why.
-						waitpid(PIDS[c], NULL, WNOHANG);
-						int exist=waitpid(PIDS[c], NULL, WNOHANG);
-						
-						if(exist==0)
-						{
-							printf("%s at PID %d\n",RunningApps[c],PIDS[c]);
-							c++;
-						}
-						else
-						{
-							pidsCount--;
-							RunningApps[c]=":(";
-							PIDS[c]=0;
-							int ca=0;
-							while(RunningApps[c+ca+1] not NULL and PIDS[c+ca+1] not 0)
-							{
-								RunningApps[c+ca]=RunningApps[c+ca+1];
-								RunningApps[c+ca+1]=":(";
-
-								PIDS[c+ca]=PIDS[c+ca+1];
-								PIDS[c+ca+1]=0;
-
-								ca++;
-							}
-							RunningApps[c+ca]=NULL;
-							PIDS[c+ca]=0;
-						}
-					}
-
-					if(c==0)
-					{
-						printColor("No apps are currently running asynchronously.");
-					}
-					printf("%s\n",COLOR_RESET);
-					break;
-				}
-
-				if(AppBuffer[0] is '\0' or AppBuffer[0] is '\n' or AppBuffer[0] is ' ' or AppBuffer[0] is '\t')
-				{
-					error("please enter an application name to execute !");
-					break;
-				}
-
-				while((binApps[i] not NULL) and !finded)
- 				{
- 					//If it exactly match, in case of a filename starting with the
- 					// same words / letter sequence
- 					if(s_isEqual(AppBuffer,binApps[i]))
- 					{
- 						matchCount=1;
- 						matchPos=i;
- 						finded=true;
- 						break;
- 					}
-
-
- 					if(s_StartWith(AppBuffer,binApps[i],s_Lenght(AppBuffer)) and !finded)
- 					{
- 						matchCount++;
- 						printColorEnd(binApps[i],'\n');
- 						matchPos=i;
- 					}
-
- 					i++;
- 				}
-
- 				if(matchCount>1)
- 				{
- 					printf("%sFounded %s%d%s matches in total !%s\n",TextColor,HighLightColor,matchCount+matchCountUsr,TextColor,COLOR_RESET);
- 				}
- 				else if(matchCount == 0)
- 				{
- 					printf("%sDid not find any applications named '%s' !%s\n",TextColor,AppBuffer,COLOR_RESET);
- 				}
- 				else
- 				{
- 					char exec[512];
-
- 					
- 					s_Merge(exec,"/usr/bin/",binApps[matchPos]);
-					RunningApps[pidsCount]=s_copy(binApps[matchPos]);
- 					
-
- 					if(RunningApps[pidsCount] is NULL)
- 					{
- 						return errorFatal("Couldn't allocate ! (RunningApps)",-2);
- 						break;
- 					}
-
- 					if(isAsync)
- 					{
- 						PIDS[pidsCount] = fork();
- 						
- 						if(PIDS[pidsCount] == 0)
- 						{
- 							setpgid(0, 0);
- 							execlp("/bin/sh","/bin/sh", "-c", exec, (char *)NULL);
- 						}
- 						else if(PIDS[pidsCount] < 0)
- 						{
- 							error("Fork failed to create the child process.");
- 						}
-
- 						printf("%s Process started on PID %d\n to stop it, type %s'stop [PID]'%s\n",TextColor,PIDS[pidsCount],HighLightColor,COLOR_RESET);
- 						pidsCount++;
- 					}
- 					else
- 					{
- 						system(exec);
- 					}
- 				}
-
- 				break;
- 			case 9:
- 				lineCount=0;
-				pageCount=-1;
-
-				isFirstPage=false;
-				isHelp=false;
-				isSearching=false;
-				nonMatch=0;
-
-				LOCAL_OFFSET=7;
-
-				i=0;
-
-				//args
-				while(CommandBuffer[LOCAL_OFFSET+i] not '\0')
-				{
-					if(CommandBuffer[LOCAL_OFFSET+i] is 'h' and CommandBuffer[LOCAL_OFFSET+1+i] is ':')
-					{
-						isHelp=true;
-						break;
-					}
-
-					if(CommandBuffer[LOCAL_OFFSET+i] is 'r' and CommandBuffer[LOCAL_OFFSET+1+i] is ':')
-					{
-						isSearching=true;
-
-						int y=0;
-						while(CommandBuffer[LOCAL_OFFSET+2+i] not '\0' and CommandBuffer[LOCAL_OFFSET+2+i] not ' ' and CommandBuffer[LOCAL_OFFSET+2+i] not '\t')
-						{
-							AppBuffer[y]=CommandBuffer[LOCAL_OFFSET+2+i];
-							y++;
-							i++;
-						}
-
-						AppBuffer[LOCAL_OFFSET+2+y]='\0';
-					}
-
-					if(CommandBuffer[LOCAL_OFFSET+i] is 'l' and CommandBuffer[LOCAL_OFFSET+1+i] is ':' and CommandBuffer[LOCAL_OFFSET+2+i]-'0' <= 9 and CommandBuffer[LOCAL_OFFSET+2+i]-'0' >= 0)
-					{
-						if(CommandBuffer[LOCAL_OFFSET+3+i] not '\0' and CommandBuffer[LOCAL_OFFSET+3+i]-'0' <= 9 and CommandBuffer[LOCAL_OFFSET+3+i]-'0' >= 0)
-						{
-							lineCount=CommandBuffer[LOCAL_OFFSET+3+i]-'0';
-							lineCount+=(CommandBuffer[LOCAL_OFFSET+2+i]-'0')*10;
-						}
-						else
-						{
-							lineCount=CommandBuffer[LOCAL_OFFSET+2+i]-'0';
-						}
-					}
-
-					if(CommandBuffer[LOCAL_OFFSET+i] is 'p' and CommandBuffer[LOCAL_OFFSET+1+i] is ':' and CommandBuffer[LOCAL_OFFSET+2+i]-'0' <= 9 and CommandBuffer[LOCAL_OFFSET+2+i]-'0' >= 0)
-					{
-						if(CommandBuffer[LOCAL_OFFSET+3+i] not '\0' and CommandBuffer[LOCAL_OFFSET+3+i]-'0' <= 9 and CommandBuffer[LOCAL_OFFSET+3+i]-'0' >= 0)
-						{
-							pageCount=CommandBuffer[LOCAL_OFFSET+3+i]-'0';
-							pageCount+=(CommandBuffer[LOCAL_OFFSET+2+i]-'0')*10;
-						}
-						else
-						{
-							pageCount=CommandBuffer[LOCAL_OFFSET+2+i]-'0';
-						}
-					}
-
-					i++;
-				}
-
-				if(isHelp)
-				{
-					printColor("Arguments :\n l:[Number from 0 to 99] --> Number of lines per pages\n p:[Number from 0 to 99] --> Which page do you want to see ?\n r:[name to search] --> search a program (ignore l: and p: args.)\n h: --> display this help\n");
-					break;
-				}
-				
-				//<0 in case some weird stuff happen, we never know with my code
-				if(lineCount<=0)
-				{
-					
-					lineCount=lineAmountCfg; //please don't have more than 3000 apps, thanks.
-				}
-
-				if(pageCount==-1)
-				{
-					isFirstPage=true;
-				}
-
-				if(pageCount<0)
-				{
-					pageCount=0;
-				}
-
-				if(pageCount*lineCount > 1024 and lineCount==3000)
-				{
-					error("Page index precised but no line per page amount precised !");
-					break;
-				}
-
-				//second 'if' because if we would have an out of bound,
-				//and check this condition, it segfault. 
-				if(binApps[pageCount*lineCount] is NULL)
-				{
-					error("Page doesn't exist !");
-					break;
-				}
-
-				i=0;
-				
-				printf("%s[/usr/bin apps (page n°%d/%d)]%s\n",HighLightColor,pageCount,binC%lineCount > 0 ? binC%lineCount-(binC%lineCount-binC/lineCount) : binC/lineCount-1,COLOR_RESET);
-				if(isSearching)
-				{
-					printColor("r: precised, hiding non-matching app\n");
-					while(binApps[i] not NULL)
- 					{
- 						if(s_StartWith(AppBuffer,binApps[i],s_Lenght(AppBuffer)))
- 						{
- 							printColorEnd(binApps[i],'\n');
- 						}
- 						else
- 						{
- 							nonMatch++;
- 						}
- 						i++;
- 					}
-
- 					printf("%sHid %s%d%s non-matching apps%s\n",TextColor,HighLightColor,nonMatch,TextColor,COLOR_RESET);
-				}
-				else
-				{
-					while(binApps[i+pageCount*lineCount] not NULL and i<lineCount)
- 					{
- 						printColorEnd(binApps[i+pageCount*lineCount],'\n');
- 						
- 						i++;
- 					}
-				}
-				
- 				
-				//Printing the warning at the end so if theres no scrolling avaiblable, we can still see it.
-
-				if(pageCount==0 and isFirstPage and !isSearching)
-				{
-					warning("number of page not precised, printed the first one. (see appsys h !)");
-				}
-
- 				break;
 		}
 	}
 
