@@ -9,11 +9,8 @@ Commands
 
 (from the help command)  
 Heres the list of all available commands :  
- * appuser : List all available applications for the current user.  
- * appsys : List system shared applications.
- * appbin : List all programs in /usr/bin.  
- * run : to execute a program, by matching filename in available .desktop files.
- * runb : to execute a program in /usr/bin, by matching name (does NOT inlude folders).
+ * app : List all available applications/programs.    
+ * run : to execute a program, by matching filename in available .desktop files or in /usr/bin with the b: argument.
  * stop : to terminate or kill a program started with run.  
  * time : display the current local time.  
  * exit : exit this program, IMPORTANT TO USE instead of ctrl+C !!!
