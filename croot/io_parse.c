@@ -123,6 +123,8 @@ char *getExec(FILE* dEntry,int addAllocSize)
         oldcc=cc;
     }
 
+	buffer[y]='\0';
+
     int len = s_Lenght(buffer);
 
     for(int i=0;i<len;i++)
