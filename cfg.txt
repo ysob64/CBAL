@@ -1,17 +1,12 @@
 1:/usr/share/applications/
 2:/home/USERHERE/.local/share/applications/
-3:/usr/share/icons/
-4:/home/USERHERE/.local/share/icons/
-5:y
-6:g
-
+3:y
+4:g
 
 Color reference : n for black (/none), r for red, g green, b blue, y yellow, m magenta, c cyan, w white.
 Note that this is in 8 bit mode for plain compatibility with all terminals.
 
 1 = path to system application
 2 = path to user applications
-3 = path to system icons (icons system to be implemented (not sure if I will))
-4 = path to user icons
-5 = color
-6 = highlight color
+3 = color
+4 = highlight color
