@@ -44,3 +44,4 @@ TODO
 - [x] /usr/bin search & run command. (useful for true async instead of using the & operand in terminal (which kill the process anyway when the terminal closes))
 - [ ] Add args support for 'run' and 'runb'.
 - [ ] make 'runb' runs in a external terminal.
+- [ ] add args support (argc, argv) to, for a first feature, automatically boot it up on a(multiple) specified command(s).
