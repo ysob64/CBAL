@@ -31,6 +31,14 @@ Required dependency (on runtime only)
 --
 'sudo' (any version) for running as root.
 
+How to build
+--
+1. Download the source code.  
+Then, in a terminal and in the same folder where you (maybe (if you didn't used the git command)) extracted the source code do :
+2. chmod +x deploy.sh
+3. ./deploy.sh
+4. If no error text shows up after you did the last command, then just run via './run.exec' ! 
+
 FAQ
 --
 
