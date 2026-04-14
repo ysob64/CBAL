@@ -19,7 +19,32 @@
 #include "hroot/macros.h"
 
 #define CMD_COMMANDS 7
-#define VERSION 0.8f
+#define VERSION 0.85f
+
+
+/*
+	    CCCCCCCCCCCCCBBBBBBBBBBBBBBBBB               AAA               LLLLLLLLLLL    
+     CCC::::::::::::CB::::::::::::::::B             A:::A              L:::::::::L             
+   CC:::::::::::::::CB::::::BBBBBB:::::B           A:::::A             L:::::::::L             
+  C:::::CCCCCCCC::::CBB:::::B     B:::::B         A:::::::A            LL:::::::LL             
+ C:::::C       CCCCCC  B::::B     B:::::B        A:::::::::A             L:::::L               
+C:::::C                B::::B     B:::::B       A:::::A:::::A            L:::::L               
+C:::::C                B::::BBBBBB:::::B       A:::::A A:::::A           L:::::L               
+C:::::C                B:::::::::::::BB       A:::::A   A:::::A          L:::::L               
+C:::::C                B::::BBBBBB:::::B     A:::::A     A:::::A         L:::::L               
+C:::::C                B::::B     B:::::B   A:::::AAAAAAAAA:::::A        L:::::L               
+C:::::C                B::::B     B:::::B  A:::::::::::::::::::::A       L:::::L               
+ C:::::C       CCCCCC  B::::B     B:::::B A:::::AAAAAAAAAAAAA:::::A      L:::::L         LLLLLL
+  C:::::CCCCCCCC::::CBB:::::BBBBBB::::::BA:::::A             A:::::A   LL:::::::LLLLLLLLL:::::L
+   CC:::::::::::::::CB:::::::::::::::::BA:::::A               A:::::A  L::::::::::::::::::::::L
+     CCC::::::::::::CB::::::::::::::::BA:::::A                 A:::::A L::::::::::::::::::::::L
+        CCCCCCCCCCCCCBBBBBBBBBBBBBBBBBAAAAAAA                   AAAAAAALLLLLLLLLLLLLLLLLLLLLLLL
+
+By ysob64
+
+under MIT license
+*/
+
 
 int main()
 {
@@ -297,7 +322,7 @@ int main()
 	free(colorhigh);
 
 	//POST INIT
-	printf("%sWelcome to CBAL v%2.1f ! type help for help !\n We are currently %d:%d:%d %s\n",TextColor,VERSION,t->tm_hour,t->tm_min,t->tm_sec,COLOR_RESET);
+	printf("%sWelcome to CBAL v%2.2f ! type help for help !\n We are currently %d:%d:%d %s\n",TextColor,VERSION,t->tm_hour,t->tm_min,t->tm_sec,COLOR_RESET);
 	//MAIN
 	while(true)
 	{
@@ -608,6 +633,11 @@ int main()
 				bool isBin=false;
 				isHelp=false;
 
+				char args[1024]={0};
+				args[0]='\0';
+
+				char binRunUser=0;
+
 				LOCAL_OFFSET=4;
 
 				//args
@@ -628,6 +658,14 @@ int main()
 					if(CommandBuffer[LOCAL_OFFSET+i] is 'b' and CommandBuffer[LOCAL_OFFSET+1+i] is ':')
 					{
 						isBin=true;
+						if(CommandBuffer[LOCAL_OFFSET+i+2] is 'u')
+						{
+							binRunUser='u';
+						}
+						else if(CommandBuffer[LOCAL_OFFSET+i+2] is 'r')
+						{
+							binRunUser='r';
+						}
 					}
 
 					if(CommandBuffer[LOCAL_OFFSET+i] is 'a' and CommandBuffer[LOCAL_OFFSET+1+i] is ':' and CommandBuffer[LOCAL_OFFSET+2+i]-'0' <= 1 and CommandBuffer[LOCAL_OFFSET+2+i]-'0' >= 0)
@@ -638,7 +676,9 @@ int main()
 					if(CommandBuffer[LOCAL_OFFSET+i] is 'e' and CommandBuffer[LOCAL_OFFSET+1+i] is ':')
 					{
 						int y=0;
-						while(CommandBuffer[LOCAL_OFFSET+2+i] not '\0' and CommandBuffer[LOCAL_OFFSET+2+i] not ' ' and CommandBuffer[LOCAL_OFFSET+2+i] not '\t')
+						
+						// '\0' check as a safeguard just in case
+						while(CommandBuffer[LOCAL_OFFSET+2+i] not '\0' and CommandBuffer[LOCAL_OFFSET+2+i] not '\n' and CommandBuffer[LOCAL_OFFSET+2+i] not ' ' and CommandBuffer[LOCAL_OFFSET+2+i] not '\t')
 						{
 							AppBuffer[y]=CommandBuffer[LOCAL_OFFSET+2+i];
 							y++;
@@ -648,12 +688,26 @@ int main()
 						AppBuffer[LOCAL_OFFSET+2+y]='\0';
 					}
 
+					if(CommandBuffer[LOCAL_OFFSET+i] is 'p' and CommandBuffer[LOCAL_OFFSET+1+i] is ':')
+					{
+						int y=1;
+						args[0]=' ';
+						while(CommandBuffer[LOCAL_OFFSET+2+i] not '\0' and CommandBuffer[LOCAL_OFFSET+2+i] not '#' and CommandBuffer[LOCAL_OFFSET+3+i] not 'E' and CommandBuffer[LOCAL_OFFSET+4+i] not 'N' and CommandBuffer[LOCAL_OFFSET+5+i] not 'D')
+						{
+							args[y]=CommandBuffer[LOCAL_OFFSET+2+i];
+							y++;
+							i++;
+						}
+
+						args[LOCAL_OFFSET+2+y]='\0';
+					}
+
 					i++;
 				}
 
 				if(isHelp)
 				{
-					printColor("Arguments :\n e:[name] --> application name to execute.\n a:[0 or 1] --> 1 for asynchronous (you can still type in after booting up a software) or 0 for synchronous (useful for viewing logs).\n b: --> execute a program from /usr/bin\n l: --> display all async. process running.\n h: --> display this help.\n");
+					printColor("Arguments :\n e:[name] --> application name to execute.\n a:[0 or 1] --> 1 for asynchronous (you can still type in after booting up a software) or 0 for synchronous (useful for viewing logs).\n b:[r or u] --> execute a program from /usr/bin as user(u) or root(r)\n l: --> display all async. process running.\n p:[args] precise args to pass (end all args with #END, ex : run b:r p:update#END e:apt, not necessary if p: is the last argument of run,ex : run b:r e:apt p:update)\n h: --> display this help.\n");
 					break;
 				}
 
@@ -710,6 +764,14 @@ int main()
 				
 				if(isBin)
 				{
+					if(binRunUser is 0 or (binRunUser not 'u' and binRunUser not 'r'))
+					{
+						error("Please enter after b: 'u' or 'r' for running as user or root !");
+						break;
+					}
+
+
+					printColor("Searching...\n");
 					while((binApps[i] not NULL) and !finded)
  					{
  						//If it exactly match, in case of a filename starting with the
@@ -735,7 +797,7 @@ int main()
 
  					if(matchCount>1)
  					{
- 						printf("%sFounded %s%d%s matches in total !%s\n",TextColor,HighLightColor,matchCount+matchCountUsr,TextColor,COLOR_RESET);
+ 						printf("%sFound %s%d%s matches in total !%s\n",TextColor,HighLightColor,matchCount+matchCountUsr,TextColor,COLOR_RESET);
  					}
  					else if(matchCount == 0)
  					{
@@ -743,17 +805,32 @@ int main()
  					}
  					else
  					{
+ 						printColor("Found !\n");
  						char exec[512];
 
  					
  						s_Merge(exec,"/usr/bin/",binApps[matchPos]);
 						RunningApps[pidsCount]=s_copy(binApps[matchPos]);
- 					
 
  						if(RunningApps[pidsCount] is NULL)
  						{
  							return errorFatal("Couldn't allocate ! (RunningApps)",-2);
  							break;
+ 						}
+
+ 						if(binRunUser is 'r')
+ 						{
+ 							char tempBuffer[512];
+ 							s_Merge(tempBuffer,"sudo ",exec);
+ 							for(int y=0;y<s_Lenght(tempBuffer);y++)
+ 							{
+ 								exec[y]=tempBuffer[y];
+ 							}
+ 						}
+
+ 						if(args[0] not '\0')
+ 						{
+ 							s_Merge(exec,exec,args);
  						}
 
  						if(isAsync)
@@ -781,6 +858,7 @@ int main()
 				}
 				else
 				{
+					printColor("Searching...\n");
 					while((userDirApps[i] not NULL) and !finded)
 	 				{
 	 					//If it exactly match, in case of a filename starting with the
@@ -828,7 +906,7 @@ int main()
 
 	 				if(matchCount+matchCountUsr>1)
 	 				{
-	 					printf("%sFounded %s%d%s matches in total !%s\n",TextColor,HighLightColor,matchCount+matchCountUsr,TextColor,COLOR_RESET);
+	 					printf("%sFound %s%d%s matches in total !%s\n",TextColor,HighLightColor,matchCount+matchCountUsr,TextColor,COLOR_RESET);
 	 				}
 	 				else if(matchCount+matchCountUsr == 0)
 	 				{
@@ -836,6 +914,7 @@ int main()
 	 				}
 	 				else
 	 				{
+	 					printColor("Found !\n");
 	 					char fexec[512];
 
 	 					if(matchCountUsr==1)
@@ -867,6 +946,11 @@ int main()
 	 						return errorFatal("Couldn't allocate memory !", -2);
 	 					}
 	 					exec = getExec(fp,4);
+
+	 					if(args[0] not '\0')
+ 						{
+ 							s_Merge(exec,exec,args);
+ 						}
 
 	 					if(isAsync)
 	 					{
