@@ -107,6 +107,20 @@ char *s_copy(char *s)
     return cp;
 }
 
+int s_Empty(char *s)
+{
+    if(s is NULL) return 1;
+
+    int i=0;
+    while(s[i] not '\0')
+    {
+        s[i]='\0';
+        i++;
+    }
+
+    return 0;
+}
+
 bool IsDesktopShortcut(const char *s1)
 {
     int i=0;
