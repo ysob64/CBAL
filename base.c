@@ -10,6 +10,7 @@
 #include <sys/wait.h>
 #include <sys/stat.h>
 #include <signal.h>
+#include <fcntl.h>
 #include <errno.h>
 
 #include "hroot/io_parse.h"
@@ -19,7 +20,7 @@
 #include "hroot/macros.h"
 
 #define CMD_COMMANDS 7
-#define VERSION 0.85f
+#define VERSION 0.86f
 
 
 /*
@@ -87,6 +88,13 @@ int main()
 	int pidsCount=0;
 
 	bool isLeaving=false;
+
+	int fd_null = open("/dev/null", O_WRONLY);
+	
+	if (fd_null == -1) {
+    	perror("open /dev/null");
+    	return 1;
+	}
 
 	if(CommandBuffer is NULL)
 	{
@@ -640,6 +648,8 @@ int main()
 
 				LOCAL_OFFSET=4;
 
+				s_Empty(AppBuffer);
+
 				//args
 				while(CommandBuffer[LOCAL_OFFSET+i] not '\0')
 				{
@@ -840,12 +850,18 @@ int main()
  							if(PIDS[pidsCount] == 0)
  							{
  								setpgid(0, 0);
+ 								dup2(fd_null, STDOUT_FILENO); //Redirect logs output
+ 								dup2(fd_null, STDERR_FILENO);
+ 								close(fd_null);
+
  								execlp("/bin/sh","/bin/sh", "-c", exec, (char *)NULL);
  							}
  							else if(PIDS[pidsCount] < 0)
  							{
  								error("Fork failed to create the child process.");
  							}
+
+ 							close(fd_null);
 
  							printf("%s Process started on PID %d\n to stop it, type %s'stop [PID]'%s\n",TextColor,PIDS[pidsCount],HighLightColor,COLOR_RESET);
  							pidsCount++;
@@ -959,6 +975,10 @@ int main()
 	 						if(PIDS[pidsCount] == 0)
 	 						{
 	 							setpgid(0, 0);
+	 							dup2(fd_null, STDOUT_FILENO); //Redirect logs output
+ 								dup2(fd_null, STDERR_FILENO);
+ 								close(fd_null);
+
 	 							execlp("/bin/sh","/bin/sh", "-c", exec, (char *)NULL);
 	 						}
 	 						else if(PIDS[pidsCount] < 0)
@@ -966,6 +986,8 @@ int main()
 	 							error("Fork failed to create the child process.");
 	 						}
 
+	 						
+	 						close(fd_null);
 	 						free(exec);
 
 	 						printf("%s Process started on PID %d\n to stop it, type %s'stop [PID]'%s\n",TextColor,PIDS[pidsCount],HighLightColor,COLOR_RESET);
