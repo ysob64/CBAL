@@ -861,8 +861,6 @@ int main()
  								error("Fork failed to create the child process.");
  							}
 
- 							close(fd_null);
-
  							printf("%s Process started on PID %d\n to stop it, type %s'stop [PID]'%s\n",TextColor,PIDS[pidsCount],HighLightColor,COLOR_RESET);
  							pidsCount++;
  						}
@@ -986,8 +984,6 @@ int main()
 	 							error("Fork failed to create the child process.");
 	 						}
 
-	 						
-	 						close(fd_null);
 	 						free(exec);
 
 	 						printf("%s Process started on PID %d\n to stop it, type %s'stop [PID]'%s\n",TextColor,PIDS[pidsCount],HighLightColor,COLOR_RESET);
@@ -1106,6 +1102,7 @@ int main()
 		cClose++;
 	}
 
+	close(fd_null);
 	free(ApplicationsSysPath);
 	free(ApplicationsLocalPath);
 	ClearUser();
