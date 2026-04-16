@@ -20,7 +20,7 @@
 #include "hroot/macros.h"
 
 #define CMD_COMMANDS 7
-#define VERSION 0.86f
+#define VERSION 0.87f
 
 
 /*
